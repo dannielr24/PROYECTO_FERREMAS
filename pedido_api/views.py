@@ -1,30 +1,24 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from control_api.models import Pedido
-from control_api.serializers import PedidoSerializer
-from datetime import date
+from .models import Pedido
+from .serializers import PedidoSerializer
+from inventario_api.models import Producto
+from rest_framework import serializers
+
 
 class PedidoViewSet(viewsets.ModelViewSet):
     queryset = Pedido.objects.all()
     serializer_class = PedidoSerializer
 
     def perform_create(self, serializer):
-        cantidad = serializer.validated_data.get('cantidad', 0)
-        precio_unitario = serializer.validated_data.get('precio_unitario', 0)
-        total = cantidad * precio_unitario
+        producto = serializer.validated_data['producto']
+        cantidad = serializer.validated_data['cantidad']
 
-        fecha = serializer.validated_data.get('fecha', date.today())
-        estado = serializer.validated_data.get('estado', 'pendiente')
+        if producto.stock_disponible < cantidad:
+            raise serializers.ValidationError("No hay suficiente stock disponible.")
 
-        serializer.save(total=total, fecha=fecha, estado=estado)
+        # Descontar stock del producto
+        producto.stock_disponible -= cantidad
+        producto.save()
 
-    def perform_update(self, serializer):
-        cantidad = serializer.validated_data.get('cantidad', 0)
-        precio_unitario = serializer.validated_data.get('precio_unitario', 0)
-        total = cantidad * precio_unitario
-
-        instance = self.get_object()
-        fecha = serializer.validated_data.get('fecha', instance.fecha)
-        estado = serializer.validated_data.get('estado', instance.estado)
-
-        serializer.save(total=total, fecha=fecha, estado=estado)
+        serializer.save()

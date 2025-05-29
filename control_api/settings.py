@@ -41,7 +41,9 @@ INSTALLED_APPS = [
     # Aquí se agrega la app
     'control_api',
     'rest_framework',
+    'inventario_api',
     'pedido_api',
+    'sucursal',
 ]
 
 MIDDLEWARE = [
