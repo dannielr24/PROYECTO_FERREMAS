@@ -11,4 +11,5 @@ urlpatterns = [
     path('api/pedidos/', include(router.urls)),
     path('api/inventario/', include('inventario_api.urls')),
     path('api/sucursal/', include('sucursal.urls')),
+    path('pagos/', include('pagos_api.urls')),
 ]
