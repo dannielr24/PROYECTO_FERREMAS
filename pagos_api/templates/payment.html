@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pago con PayPal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            text-align: center;
+            padding-top: 100px;
+        }
+        .btn-paypal {
+            background-color: #ffc439;
+            color: #111;
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-paypal:hover {
+            background-color: #ffb347;
+        }
+        .link-carrito {
+            display: inline-block;
+            margin-top: 30px;
+            font-size: 16px;
+            color: #0073aa;
+            text-decoration: none;
+        }
+        .link-carrito:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Compra de Producto</h1>
+    <p>Total a pagar: <strong>$10.00 USD</strong></p>
+
+    <!-- Formulario que hace POST a la vista create_payment -->
+    <form method="post" action="{% url 'create_payment' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-paypal">Pagar con PayPal</button>
+    </form>
+
+    <!-- Enlace para agregar producto demo al carrito -->
+    <a href="{% url 'agregar_prueba' %}" class="link-carrito">🛒 Agregar producto demo al carrito</a>
+</body>
+</html>

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<!-- Logo normal -->
+<div style="text-align:center; margin-bottom: 20px;">
+    <img src="{% static 'logo-ferremas.png' %}" alt="Logo Ferremas" style="width: 200px; height: auto;">
+</div>
+
+<h1 class="text-center mb-4">Catálogo de Productos</h1>
+
+<div class="container">
+    <div class="row">
+        {% for producto in productos %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                {% if producto.imagen %}
+                <img src="{{ producto.imagen }}" class="card-img-top" alt="{{ producto.nombre }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <img src="https://via.placeholder.com/300x200.png?text=Sin+Imagen" class="card-img-top" alt="Sin imagen">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ producto.nombre }}</h5>
+                    <p class="card-text">Precio: ${{ producto.precio }}</p>
+                    <p class="card-text">{{ producto.descripcion }}</p>
+                    <p class="card-text">Stock disponible: {{ producto.stock_disponible }}</p>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{% url 'agregar_al_carrito' producto.id %}" class="btn btn-primary">Agregar al carrito</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

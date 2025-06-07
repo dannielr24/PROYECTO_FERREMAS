@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Lista de Sucursales</h1>
+<ul>
+    {% for sucursal in sucursales %}
+    <li>{{ sucursal.nombre }} - Dirección: {{ sucursal.direccion }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

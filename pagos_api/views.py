@@ -1,49 +1,115 @@
-from django.shortcuts import redirect
+import paypalrestsdk
+from django.conf import settings
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from transbank.common.integration_type import IntegrationType
-from transbank.webpay.webpay_plus.transaction import Transaction
-from transbank.common.options import WebpayOptions
+from django.views.decorators.http import require_GET, require_POST
+from django.urls import reverse  # ✅ Para generar URLs dinámicas
 
-# Configuración manual para entorno de pruebas
-commerce_code = '597055555532'
-api_key = '597055555532'
-integration_type = IntegrationType.TEST
 
-options = WebpayOptions(commerce_code, api_key, integration_type)
-transaction = Transaction(options)
+# Configuración del SDK de PayPal
+paypalrestsdk.configure({
+    "mode": "sandbox",  # Cambiar a "live" en producción
+    "client_id": settings.PAYPAL_CLIENT_ID,
+    "client_secret": settings.PAYPAL_SECRET
+})
 
-def iniciar_pago(request):
-    buy_order = "orden12345"
-    session_id = "sesion12345"
-    amount = 10000
-    return_url = request.build_absolute_uri('/pagos/confirmacion/')
 
-    try:
-        response = transaction.create(buy_order, session_id, amount, return_url)
-        token = response.token
-        url = response.url
-        return redirect(f"{url}?token_ws={token}")
-    except Exception as e:
-        return HttpResponse(f"❌ Error al iniciar la transacción: {e}")
+@require_GET
+def payment_page(request):
+    """Página con el botón para iniciar el pago"""
+    return render(request, 'payment.html')
 
-def confirmacion_pago(request):
-    token_ws = request.GET.get('token_ws') or request.POST.get('token_ws')
-    if not token_ws:
-        return HttpResponse("❌ Error: no se recibió token_ws.")
 
-    try:
-        result = transaction.commit(token_ws)
-    except Exception as e:
-        return HttpResponse(f"❌ Error al confirmar la transacción: {e}")
+@require_POST
+def create_payment(request):
+    """Vista para crear un pago usando los datos del carrito de compras"""
 
-    if result.status == "AUTHORIZED":
-        mensaje = (
-            f"✅ Pago autorizado!<br>"
-            f"🧾 Orden: {result.buy_order}<br>"
-            f"💵 Monto: {result.amount}<br>"
-            f"💳 Tarjeta: {result.card_detail.card_number}"
-        )
+    # Obtener carrito de la sesión
+    carrito = request.session.get("carrito", {})
+    if not carrito:
+        return HttpResponse("El carrito está vacío.")
+
+    # Calcular total
+    total = sum(item['precio'] * item['cantidad'] for item in carrito.values())
+
+    # Crear lista de productos para PayPal
+    items = [{
+        "name": item['nombre'],
+        "sku": str(producto_id),
+        "price": f"{item['precio']:.2f}",
+        "currency": "USD",
+        "quantity": item['cantidad']
+    } for producto_id, item in carrito.items()]
+
+    # ✅ Crear el pago con URLs generadas dinámicamente
+    payment = paypalrestsdk.Payment({
+        "intent": "sale",
+        "payer": {
+            "payment_method": "paypal"
+        },
+        "redirect_urls": {
+            "return_url": request.build_absolute_uri(reverse('execute_payment')),
+            "cancel_url": request.build_absolute_uri(reverse('cancel_payment'))
+        },
+        "transactions": [{
+            "item_list": {"items": items},
+            "amount": {
+                "total": f"{total:.2f}",
+                "currency": "USD"
+            },
+            "description": "Pago del carrito de compras"
+        }]
+    })
+
+    # Procesar el pago
+    if payment.create():
+        for link in payment.links:
+            if link.rel == "approval_url":
+                return redirect(link.href)
+        return HttpResponse("Error: no se encontró la URL de aprobación de PayPal.")
     else:
-        mensaje = f"❌ Pago no autorizado. Estado: {result.status}"
+        return HttpResponse("Error al crear el pago: " + payment.error['message'])
 
-    return HttpResponse(mensaje)
+
+@require_GET
+def execute_payment(request):
+    """Vista para completar el pago después de la aprobación del usuario"""
+    payment_id = request.GET.get('paymentId')
+    payer_id = request.GET.get('PayerID')
+
+    if not payment_id or not payer_id:
+        return HttpResponse("Faltan parámetros de pago.")
+
+    payment = paypalrestsdk.Payment.find(payment_id)
+
+    if payment.execute({"payer_id": payer_id}):
+        # Vaciar el carrito
+        request.session["carrito"] = {}
+        return render(request, "payment/success.html")
+    else:
+        return render(request, "payment/error.html", {"error": payment.error})
+
+
+@require_GET
+def cancel_payment(request):
+    """Vista para cuando el usuario cancela el pago"""
+    return render(request, "cancel.html")
+
+
+def ver_carrito(request):
+    """Vista para mostrar los productos del carrito"""
+    carrito = request.session.get("carrito", {})
+    total = sum(item["precio"] * item["cantidad"] for item in carrito.values())
+    return render(request, "carrito.html", {"carrito": carrito, "total": total})
+
+
+def agregar_prueba(request):
+    """Agrega un producto de prueba al carrito"""
+    carrito = request.session.get("carrito", {})
+    carrito["1"] = {
+        "nombre": "Producto demo",
+        "precio": 10.00,
+        "cantidad": 1
+    }
+    request.session["carrito"] = carrito
+    return HttpResponse("Producto agregado al carrito.")

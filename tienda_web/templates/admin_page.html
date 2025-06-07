@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Panel de Administración</h1>
+<ul>
+    <li><a href="/admin/">Ir al panel Admin de Django</a></li>
+    <li><a href="{% url 'sucursales' %}">Ver Sucursales</a></li>
+    <li><a href="{% url 'transferencias' %}">Gestionar Transferencias</a></li>
+    <li><a href="{% url 'catalogo' %}">Ver Productos</a></li>
+</ul>
+{% endblock %}

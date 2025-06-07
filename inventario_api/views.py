@@ -4,6 +4,9 @@ from control_api.models import Pedido
 from control_api.serializers import PedidoSerializer
 from datetime import date
 
+from .models import Producto  # <--- agregar esto
+from .serializers import ProductoSerializer  # <--- agregar esto
+
 class PedidoViewSet(viewsets.ModelViewSet):
     queryset = Pedido.objects.all()
     serializer_class = PedidoSerializer
@@ -28,3 +31,8 @@ class PedidoViewSet(viewsets.ModelViewSet):
         estado = serializer.validated_data.get('estado', instance.estado)
 
         serializer.save(total=total, fecha=fecha, estado=estado)
+
+# NUEVO:
+class ProductoViewSet(viewsets.ModelViewSet):
+    queryset = Producto.objects.all()
+    serializer_class = ProductoSerializer

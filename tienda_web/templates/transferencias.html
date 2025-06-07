@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Transferencias de Productos entre Sucursales</h1>
+
+<h2>Realizar nueva transferencia</h2>
+<form method="post">
+    {% csrf_token %}
+    <p>Producto ID: <input type="text" name="producto_id"></p>
+    <p>Sucursal Origen ID: <input type="text" name="sucursal_origen"></p>
+    <p>Sucursal Destino ID: <input type="text" name="sucursal_destino"></p>
+    <p>Cantidad: <input type="number" name="cantidad"></p>
+    <button type="submit">Realizar transferencia</button>
+</form>
+
+<h2>Transferencias recientes</h2>
+<ul>
+    {% for transferencia in transferencias %}
+    <li>Producto: {{ transferencia.producto }} | Origen: {{ transferencia.sucursal_origen }} | Destino: {{ transferencia.sucursal_destino }} | Cantidad: {{ transferencia.cantidad }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

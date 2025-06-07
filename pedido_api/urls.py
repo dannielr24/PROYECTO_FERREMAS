@@ -7,9 +7,10 @@ router = DefaultRouter()
 router.register(r'pedidos', PedidoViewSet)
 
 urlpatterns = [
+    path('', include('tienda_web.urls')),
     path('admin/', admin.site.urls),
     path('api/pedidos/', include(router.urls)),
     path('api/inventario/', include('inventario_api.urls')),
     path('api/sucursal/', include('sucursal.urls')),
-    path('pagos/', include('pagos_api.urls')),
+    path('payment/', include('pagos_api.urls')),
 ]

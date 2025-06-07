@@ -1,0 +1,23 @@
+<h1>Checkout</h1>
+
+{% if carrito %}
+    <ul>
+        {% for key, item in carrito.items %}
+            <li>{{ item.nombre }} - {{ item.cantidad }} x ${{ item.precio }}</li>
+        {% endfor %}
+    </ul>
+    <p><strong>Total:</strong> ${{ total }}</p>
+
+    <!-- Botón para pagar con Webpay -->
+    <form action="/pagos/iniciar/" method="get">
+        <button type="submit" class="btn btn-success">Pagar con Webpay</button>
+    </form>
+
+    <!-- Botón para pagar con PayPal -->
+    <form action="/payment/create/" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Pagar con PayPal</button>
+    </form>
+{% else %}
+    <p>El carrito está vacío.</p>
+{% endif %}

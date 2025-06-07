@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'inventario_api',
     'pedido_api',
     'sucursal',
+    'pagos_api',
+    'tienda_web',     
 ]
 
 MIDDLEWARE = [
@@ -136,3 +138,8 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
     ]
 }
+
+# Configuración de PayPal
+PAYPAL_CLIENT_ID = 'AaZd84JOolxG2yvdg5FWqlFbcPI_ZiaZp6UYm8WJHYNZAqMDrWO_pVVo2wN3xdQXWBCuXqH47M7t3Evt'
+PAYPAL_SECRET = 'EIGrd4_4cIV2Zi8hXnfz8M2gjfGz4Q44S3mOP3vbMYsr04uzfGf06HeVB9Prl2manHWJSRbt2LHW41GT'
+
