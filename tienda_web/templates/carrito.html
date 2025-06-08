@@ -1,29 +1,61 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block content %}
-<h1>Tu Carrito</h1>
 
-{% if carrito %}
-    <ul>
-        {% for key, item in carrito.items %}
-            <li>{{ item.nombre }} - {{ item.cantidad }} x ${{ item.precio }}</li>
-        {% endfor %}
-    </ul>
-    <p><strong>Total:</strong> ${{ total }}</p>
+<h1 class="text-center mb-4">🛒 Tu Carrito de Compras</h1>
 
-    <!-- Botón para pagar con Webpay -->
-    <form action="/pagos/iniciar/" method="get">
-        <button type="submit" class="btn btn-success">Pagar con Webpay</button>
-    </form>
+<div class="container">
+    {% if carrito %}
+        <div class="table-responsive mb-4">
+            <table class="table align-middle table-hover shadow-sm">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>Producto</th>
+                        <th>Nombre</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, item in carrito.items %}
+                    <tr>
+                        <td class="text-center" style="width: 100px;">
+                            {% if item.imagen %}
+                            <img src="{{ item.imagen }}" alt="{{ item.nombre }}" style="width: 80px; height: 80px; object-fit: contain; background-color: #f9f9f9; border-radius: 8px;">
+                            {% else %}
+                            <img src="https://via.placeholder.com/80x80.png?text=No+Imagen" alt="Sin imagen" style="width: 80px; height: 80px; object-fit: contain; background-color: #f9f9f9; border-radius: 8px;">
+                            {% endif %}
+                        </td>
+                        <td>{{ item.nombre }}</td>
+                        <td class="text-center">{{ item.cantidad }}</td>
+                        <td class="text-end">${{ item.precio }}</td>
+                        <td class="text-end">${{ item.precio|floatformat:2|floatformat }} × {{ item.cantidad }} = ${{ item.precio|floatformat|floatformat:"2"|floatformat }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Botón para pagar con PayPal -->
-    <form action="/pagos/create/" method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Pagar con PayPal</button>
-    </form>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="/" class="btn btn-secondary">← Seguir comprando</a>
+            <h4>Total: <span class="text-primary fw-bold">${{ total }}</span></h4>
+        </div>
 
-{% else %}
-    <p>El carrito está vacío.</p>
-{% endif %}
+        <div class="text-center">
+            <a href="{% url 'checkout' %}" class="btn btn-success btn-lg px-5">Ir a pagar 💳</a>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            🛒 El carrito está vacío. ¡Empieza a agregar productos!
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="/" class="btn btn-primary">Ir al catálogo 🛠️</a>
+        </div>
+    {% endif %}
+</div>
 
 {% endblock %}

@@ -4,23 +4,40 @@
     {% load static %}
     <meta charset="UTF-8">
     <title>Ferremas - Tienda de Herramientas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Estilo opcional para que el navbar se vea más pro -->
+    <style>
+        .navbar-brand img {
+            height: 50px;
+            object-fit: contain;
+        }
+
+        .navbar {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
 
-<!-- Navbar bonita -->
+<!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
-        <!-- Logo en navbar -->
+        <!-- LOGO EN LA IZQUIERDA -->
         <a class="navbar-brand d-flex align-items-center" href="/">
-            <img src="{% static 'logo-hex.png' %}" alt="Ferremas" style="width: 40px; height: 35px; margin-right: 10px;">
-            Ferremas
+            <img src="{% static 'logo-ferremas.png' %}" alt="Ferremas">
+            <!-- Si NO quieres texto al lado, puedes comentar esta línea -->
+            <span class="ms-2 fw-bold">Ferremas</span>
         </a>
-        
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-        
+
+        <!-- Menú -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="/">Catálogo</a></li>
@@ -39,7 +56,7 @@
     {% block content %}{% endblock %}
 </div>
 
-<!-- Bootstrap JS (opcional, para menú responsive) -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

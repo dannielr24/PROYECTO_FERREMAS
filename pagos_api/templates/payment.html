@@ -1,50 +1,64 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Pago con PayPal</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            text-align: center;
-            padding-top: 100px;
-        }
-        .btn-paypal {
-            background-color: #ffc439;
-            color: #111;
-            padding: 15px 30px;
-            font-size: 18px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .btn-paypal:hover {
-            background-color: #ffb347;
-        }
-        .link-carrito {
-            display: inline-block;
-            margin-top: 30px;
-            font-size: 16px;
-            color: #0073aa;
-            text-decoration: none;
-        }
-        .link-carrito:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <h1>Compra de Producto</h1>
-    <p>Total a pagar: <strong>$10.00 USD</strong></p>
+{% extends 'base.html' %}
 
-    <!-- Formulario que hace POST a la vista create_payment -->
-    <form method="post" action="{% url 'create_payment' %}">
-        {% csrf_token %}
-        <button type="submit" class="btn-paypal">Pagar con PayPal</button>
-    </form>
+{% load static %}
 
-    <!-- Enlace para agregar producto demo al carrito -->
-    <a href="{% url 'agregar_prueba' %}" class="link-carrito">🛒 Agregar producto demo al carrito</a>
-</body>
-</html>
+{% block content %}
+
+<h1 class="text-center mb-4">💳 Confirmar Pago con PayPal</h1>
+
+<div class="container">
+    {% if carrito %}
+        <div class="table-responsive mb-4">
+            <table class="table align-middle table-hover shadow-sm">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>Producto</th>
+                        <th>Nombre</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, item in carrito.items %}
+                    <tr>
+                        <td class="text-center" style="width: 100px;">
+                            {% if item.imagen %}
+                            <img src="{{ item.imagen }}" alt="{{ item.nombre }}" style="width: 80px; height: 80px; object-fit: contain; background-color: #f9f9f9; border-radius: 8px;">
+                            {% else %}
+                            <img src="https://via.placeholder.com/80x80.png?text=No+Imagen" alt="Sin imagen" style="width: 80px; height: 80px; object-fit: contain; background-color: #f9f9f9; border-radius: 8px;">
+                            {% endif %}
+                        </td>
+                        <td>{{ item.nombre }}</td>
+                        <td class="text-center">{{ item.cantidad }}</td>
+                        <td class="text-end">${{ item.precio }}</td>
+                        <td class="text-end">${{ item.precio|floatformat:2 }} × {{ item.cantidad }} = ${{ item.precio|floatformat:2|floatformat }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="/" class="btn btn-secondary">← Seguir comprando</a>
+            <h4>Total a pagar: <span class="text-primary fw-bold">${{ total }}</span></h4>
+        </div>
+
+        <div class="text-center">
+            <form method="post" action="{% url 'create_payment' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning btn-lg px-5">Pagar con PayPal 🅿️</button>
+            </form>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            🛒 El carrito está vacío. ¡Agrega productos antes de pagar!
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="/" class="btn btn-primary">Ir al catálogo 🛠️</a>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

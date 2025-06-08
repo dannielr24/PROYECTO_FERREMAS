@@ -16,8 +16,9 @@ paypalrestsdk.configure({
 
 @require_GET
 def payment_page(request):
-    """Página con el botón para iniciar el pago"""
-    return render(request, 'payment.html')
+    carrito = request.session.get("carrito", {})
+    total = sum(float(item["precio"]) * item["cantidad"] for item in carrito.values())
+    return render(request, 'payment.html', {"carrito": carrito, "total": total})
 
 
 @require_POST
@@ -101,15 +102,3 @@ def ver_carrito(request):
     carrito = request.session.get("carrito", {})
     total = sum(item["precio"] * item["cantidad"] for item in carrito.values())
     return render(request, "carrito.html", {"carrito": carrito, "total": total})
-
-
-def agregar_prueba(request):
-    """Agrega un producto de prueba al carrito"""
-    carrito = request.session.get("carrito", {})
-    carrito["1"] = {
-        "nombre": "Producto demo",
-        "precio": 10.00,
-        "cantidad": 1
-    }
-    request.session["carrito"] = carrito
-    return HttpResponse("Producto agregado al carrito.")

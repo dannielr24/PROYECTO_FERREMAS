@@ -101,7 +101,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # 🚩 Aquí agregamos la configuración que te faltaba:
 STATICFILES_DIRS = [
@@ -122,3 +122,8 @@ REST_FRAMEWORK = {
 # Configuración de PayPal
 PAYPAL_CLIENT_ID = 'AaZd84JOolxG2yvdg5FWqlFbcPI_ZiaZp6UYm8WJHYNZAqMDrWO_pVVo2wN3xdQXWBCuXqH47M7t3Evt'
 PAYPAL_SECRET = 'EIGrd4_4cIV2Zi8hXnfz8M2gjfGz4Q44S3mOP3vbMYsr04uzfGf06HeVB9Prl2manHWJSRbt2LHW41GT'
+
+# Media (para imágenes subidas)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+

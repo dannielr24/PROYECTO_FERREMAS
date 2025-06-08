@@ -1,23 +1,45 @@
-<h1>Checkout</h1>
+{% extends 'base.html' %}
 
-{% if carrito %}
-    <ul>
-        {% for key, item in carrito.items %}
-            <li>{{ item.nombre }} - {{ item.cantidad }} x ${{ item.precio }}</li>
-        {% endfor %}
-    </ul>
-    <p><strong>Total:</strong> ${{ total }}</p>
+{% block content %}
 
-    <!-- Botón para pagar con Webpay -->
-    <form action="/pagos/iniciar/" method="get">
-        <button type="submit" class="btn btn-success">Pagar con Webpay</button>
-    </form>
+<h1 class="text-center mb-4">💳 Checkout</h1>
 
-    <!-- Botón para pagar con PayPal -->
-    <form action="/payment/create/" method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-primary">Pagar con PayPal</button>
-    </form>
-{% else %}
-    <p>El carrito está vacío.</p>
-{% endif %}
+<div class="container">
+    {% if carrito %}
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-primary text-white">
+                Resumen de tu compra
+            </div>
+            <div class="card-body">
+                <ul class="list-group mb-3">
+                    {% for key, item in carrito.items %}
+                    <li class="list-group-item d-flex justify-content-between lh-sm">
+                        <div>
+                            <h6 class="my-0">{{ item.nombre }}</h6>
+                            <small class="text-muted">Cantidad: {{ item.cantidad }}</small>
+                        </div>
+                        <span class="text-muted">${{ item.precio|floatformat:2 }}</span>
+                    </li>
+                    {% endfor %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Total</strong>
+                        <strong>${{ total }}</strong>
+                    </li>
+                </ul>
+
+                <div class="text-center">
+                    <form method="post" action="/payment/create-payment/">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg w-100">Pagar con PayPal</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            No hay productos en el carrito.
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -21,9 +21,10 @@ def agregar_al_carrito(request, producto_id):
     producto = response.json()
     producto_data = {
         "nombre": producto["nombre"],
-        "precio": producto["precio"],
-        "cantidad": 1
-    }
+        "precio": float(producto["precio"]),
+        "cantidad": 1,
+        "imagen": producto["imagen"] if "imagen" in producto and producto["imagen"] else ""
+        }
 
     if str(producto_id) in carrito:
         carrito[str(producto_id)]["cantidad"] += 1
@@ -35,7 +36,7 @@ def agregar_al_carrito(request, producto_id):
 
 def carrito(request):
     carrito = request.session.get("carrito", {})
-    total = sum(item["precio"] * item["cantidad"] for item in carrito.values())
+    total = sum(float(item["precio"]) * item["cantidad"] for item in carrito.values())
     return render(request, 'carrito.html', {"carrito": carrito, "total": total})
 
 def checkout(request):
