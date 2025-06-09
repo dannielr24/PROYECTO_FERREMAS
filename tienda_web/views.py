@@ -74,3 +74,9 @@ def transferencias(request):
 
 def admin_page(request):
     return render(request, 'admin_page.html')
+
+# tienda_web/views.py
+
+def limpiar_carrito(request):
+    request.session["carrito"] = {}
+    return redirect("carrito")
