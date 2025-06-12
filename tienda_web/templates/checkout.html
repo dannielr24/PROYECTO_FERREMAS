@@ -22,10 +22,23 @@
                     </li>
                     {% endfor %}
                     <li class="list-group-item d-flex justify-content-between">
-                        <strong>Total</strong>
-                        <strong>${{ total }}</strong>
+                        <strong>Total CLP</strong>
+                        <strong>${{ total_clp }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Total USD</strong>
+                        <strong>${{ total_usd }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Total EUR</strong>
+                        <strong>€{{ total_eur }}</strong>
                     </li>
                 </ul>
+
+                <div class="mb-3 text-center text-muted">
+                    <small>Tasa de cambio actual:</small><br>
+                    <small>1 USD = {{ dolar_value }} CLP | 1 EUR = {{ euro_value }} CLP</small>
+                </div>
 
                 <div class="text-center">
                     <form method="post" action="/payment/create-payment/">

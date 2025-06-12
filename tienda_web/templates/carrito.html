@@ -32,7 +32,7 @@
                         <td class="align-middle">{{ item.nombre }}</td>
                         <td class="align-middle">{{ item.cantidad }}</td>
                         <td class="align-middle">${{ item.precio|floatformat:0 }}</td>
-                        <td class="align-middle">${{ item.precio|floatformat:0 }} × {{ item.cantidad }} = ${{ item.precio|floatformat:0|add:item.precio|floatformat:0 }}</td>
+                        <td class="align-middle">${{ item.precio|floatformat:0 }} × {{ item.cantidad }} = ${{ item.subtotal|floatformat:0 }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

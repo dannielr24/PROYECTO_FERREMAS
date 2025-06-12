@@ -40,13 +40,33 @@ def agregar_al_carrito(request, producto_id):
 
 def carrito(request):
     carrito = request.session.get("carrito", {})
-    total = sum(float(item["precio"]) * item["cantidad"] for item in carrito.values())
+    total = 0
+
+    # Generamos lista de items con subtotal incluido
+    for item in carrito.values():
+        item['subtotal'] = item['precio'] * item['cantidad']
+        total += item['subtotal']
+
     return render(request, 'carrito.html', {"carrito": carrito, "total": total})
 
 def checkout(request):
     carrito = request.session.get("carrito", {})
-    total = sum(item["precio"] * item["cantidad"] for item in carrito.values())
-    return render(request, 'checkout.html', {"carrito": carrito, "total": total})
+    total_clp = sum(item["precio"] * item["cantidad"] for item in carrito.values())
+
+    dolar_value = get_dolar_value()
+    euro_value = get_euro_value()
+
+    total_usd = round(total_clp / dolar_value, 2)
+    total_eur = round(total_clp / euro_value, 2)
+
+    return render(request, 'checkout.html', {
+        "carrito": carrito,
+        "total_clp": total_clp,
+        "total_usd": total_usd,
+        "total_eur": total_eur,
+        "dolar_value": dolar_value,
+        "euro_value": euro_value
+    })
 
 def pago_confirmado(request):
     # request.session["carrito"] = {}
@@ -166,3 +186,22 @@ def registro(request):
             messages.success(request, "Usuario creado. Ahora puedes iniciar sesión.")
             return redirect("login")
     return render(request, "registro.html")
+
+def get_dolar_value():
+    try:
+        response = requests.get("https://mindicador.cl/api/dolar")
+        response.raise_for_status()  # Lanza excepción si la respuesta no es 200 OK
+        data = response.json()
+        dolar_value = data["serie"][0]["valor"]  # El valor más reciente
+        return dolar_value
+    except Exception as e:
+        print("Error obteniendo el valor del dólar:", e)
+        return 900  # Valor de respaldo por si la API falla
+    
+def get_euro_value():
+    try:
+        response = requests.get("https://mindicador.cl/api/euro")
+        data = response.json()
+        return data["serie"][0]["valor"]
+    except Exception:
+        return 1100  # Valor por defecto si falla
