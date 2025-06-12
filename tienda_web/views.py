@@ -51,21 +51,33 @@ def carrito(request):
 
 def checkout(request):
     carrito = request.session.get("carrito", {})
-    total_clp = sum(item["precio"] * item["cantidad"] for item in carrito.values())
+    total_clp = sum(float(item["precio"]) * item["cantidad"] for item in carrito.values())
 
-    dolar_value = get_dolar_value()
-    euro_value = get_euro_value()
+    # Obtener API mindicador
+    indicadores = requests.get("https://mindicador.cl/api").json()
 
+    dolar_value = indicadores["dolar"]["valor"]
+    euro_value = indicadores["euro"]["valor"]
+    uf_value = indicadores["uf"]["valor"]
+    utm_value = indicadores["utm"]["valor"]
+
+    # Convertir total
     total_usd = round(total_clp / dolar_value, 2)
     total_eur = round(total_clp / euro_value, 2)
+    total_uf = round(total_clp / uf_value, 2)
+    total_utm = round(total_clp / utm_value, 2)
 
     return render(request, 'checkout.html', {
         "carrito": carrito,
         "total_clp": total_clp,
         "total_usd": total_usd,
         "total_eur": total_eur,
+        "total_uf": total_uf,
+        "total_utm": total_utm,
         "dolar_value": dolar_value,
-        "euro_value": euro_value
+        "euro_value": euro_value,
+        "uf_value": uf_value,
+        "utm_value": utm_value
     })
 
 def pago_confirmado(request):
@@ -205,3 +217,38 @@ def get_euro_value():
         return data["serie"][0]["valor"]
     except Exception:
         return 1100  # Valor por defecto si falla
+    
+def aumentar_cantidad(request, producto_id):
+    carrito = request.session.get("carrito", {})
+    producto_id_str = str(producto_id)
+
+    if producto_id_str in carrito:
+        carrito[producto_id_str]["cantidad"] += 1
+
+    request.session["carrito"] = carrito
+    return redirect("carrito")
+
+def disminuir_cantidad(request, producto_id):
+    carrito = request.session.get("carrito", {})
+    producto_id_str = str(producto_id)
+
+    if producto_id_str in carrito:
+        if carrito[producto_id_str]["cantidad"] > 1:
+            carrito[producto_id_str]["cantidad"] -= 1
+        else:
+            # Si cantidad es 1 y se disminuye → eliminar producto
+            del carrito[producto_id_str]
+
+    request.session["carrito"] = carrito
+    return redirect("carrito")
+
+def eliminar_producto(request, producto_id):
+    carrito = request.session.get("carrito", {})
+    producto_id_str = str(producto_id)
+
+    if producto_id_str in carrito:
+        del carrito[producto_id_str]
+
+    request.session["carrito"] = carrito
+    return redirect("carrito")
+

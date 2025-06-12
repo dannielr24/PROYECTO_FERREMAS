@@ -30,9 +30,18 @@
                             {% endif %}
                         </td>
                         <td class="align-middle">{{ item.nombre }}</td>
-                        <td class="align-middle">{{ item.cantidad }}</td>
+                        <td class="align-middle">
+                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                <a href="{% url 'disminuir_cantidad' key %}" class="btn btn-sm btn-outline-secondary">-</a>
+                                {{ item.cantidad }}
+                                <a href="{% url 'aumentar_cantidad' key %}" class="btn btn-sm btn-outline-secondary">+</a>
+                            </div>
+                        </td>
                         <td class="align-middle">${{ item.precio|floatformat:0 }}</td>
-                        <td class="align-middle">${{ item.precio|floatformat:0 }} × {{ item.cantidad }} = ${{ item.subtotal|floatformat:0 }}</td>
+                        <td class="align-middle">
+                            ${{ item.subtotal|floatformat:0 }}
+                            <a href="{% url 'eliminar_producto' key %}" class="btn btn-sm btn-outline-danger ms-2">🗑️</a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

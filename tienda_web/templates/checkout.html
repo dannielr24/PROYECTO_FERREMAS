@@ -33,11 +33,23 @@
                         <strong>Total EUR</strong>
                         <strong>€{{ total_eur }}</strong>
                     </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Total UF</strong>
+                        <strong>{{ total_uf }} UF</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <strong>Total UTM</strong>
+                        <strong>{{ total_utm }} UTM</strong>
+                    </li>
                 </ul>
-
                 <div class="mb-3 text-center text-muted">
                     <small>Tasa de cambio actual:</small><br>
-                    <small>1 USD = {{ dolar_value }} CLP | 1 EUR = {{ euro_value }} CLP</small>
+                    <small>
+                        1 USD = {{ dolar_value }} CLP |
+                        1 EUR = {{ euro_value }} CLP |
+                        1 UF = {{ uf_value }} CLP |
+                        1 UTM = {{ utm_value }} CLP
+                    </small>
                 </div>
 
                 <div class="text-center">
