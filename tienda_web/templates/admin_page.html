@@ -1,11 +1,57 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Panel de Administración</h1>
-<ul>
-    <li><a href="/admin/">Ir al panel Admin de Django</a></li>
-    <li><a href="{% url 'sucursales' %}">Ver Sucursales</a></li>
-    <li><a href="{% url 'transferencias' %}">Gestionar Transferencias</a></li>
-    <li><a href="{% url 'catalogo' %}">Ver Productos</a></li>
-</ul>
+
+<h1 class="text-center mb-4">⚙️ Panel de Administración</h1>
+
+<div class="container">
+    <div class="row justify-content-center">
+        
+        <!-- Panel Admin Django -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center shadow border-0">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h5 class="card-title">Panel Administrativo de Ferremas</h5>
+                    <p class="card-text">Accede al panel administrativo de Ferremas.</p>
+                    <a href="/admin/" class="btn btn-primary mt-auto">Ir al Admin</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sucursales -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center shadow border-0">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h5 class="card-title">Sucursales</h5>
+                    <p class="card-text">Visualiza las sucursales disponibles y sus productos.</p>
+                    <a href="{% url 'sucursales' %}" class="btn btn-success mt-auto">Ver Sucursales</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transferencias -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center shadow border-0">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h5 class="card-title">Transferencias</h5>
+                    <p class="card-text">Gestiona transferencias de productos entre sucursales.</p>
+                    <a href="{% url 'transferencias' %}" class="btn btn-warning mt-auto">Gestionar Transferencias</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Catálogo -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center shadow border-0">
+                <div class="card-body d-flex flex-column justify-content-center">
+                    <h5 class="card-title">Catálogo de Productos</h5>
+                    <p class="card-text">Explora el catálogo general de productos de la tienda.</p>
+                    <a href="{% url 'catalogo' %}" class="btn btn-info mt-auto">Ver Productos</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 {% endblock %}

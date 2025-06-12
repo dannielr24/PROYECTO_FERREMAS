@@ -1,0 +1,14 @@
+{% extends "admin/base_site.html" %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="/admin-page/">Administración de Ferremas</a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}  {# Este bloque se muestra bien en la parte superior derecha #}
+    <div style="margin-top: 10px; margin-bottom: 10px;">
+        <a href="/" class="btn btn-primary">🏠 Volver a la página principal</a>
+        <a href="/admin-page/" class="btn btn-secondary ms-2">Ir al Panel Admin Ferremas</a>
+    </div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<h1 class="text-center mb-4">📦 Productos en {{ sucursal.nombre }}</h1>
+
+<div class="container mb-4 text-center">
+    <a href="{% url 'sucursales' %}" class="btn btn-secondary">← Volver a Sucursales</a>
+</div>
+
+{% if productos %}
+    <div class="row">
+        {% for producto in productos %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow border-0">
+                <!-- Imagen del producto -->
+                {% if producto.imagen %}
+                <img src="{{ producto.imagen }}" alt="{{ producto.nombre }}" style="width:100%; height:200px; object-fit:contain; background-color: #f8f9fa;">
+                {% else %}
+                <img src="https://via.placeholder.com/400x300.png?text=Sin+Imagen" alt="Sin imagen" style="width:100%; height:200px; object-fit:contain; background-color: #f8f9fa;">
+                {% endif %}
+
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ producto.nombre }}</h5>
+                    <p class="card-text text-muted">{{ producto.descripcion }}</p>
+                    <p class="card-text fw-bold text-primary">Precio: ${{ producto.precio }}</p>
+                    <p class="card-text">Stock en esta sucursal: <span class="fw-bold">{{ producto.stock }}</span></p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info text-center" role="alert">
+        Esta sucursal no tiene productos en stock actualmente.
+    </div>
+{% endif %}
+
+{% endblock %}

@@ -1,22 +1,103 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block content %}
-<h1>Transferencias de Productos entre Sucursales</h1>
 
-<h2>Realizar nueva transferencia</h2>
-<form method="post">
-    {% csrf_token %}
-    <p>Producto ID: <input type="text" name="producto_id"></p>
-    <p>Sucursal Origen ID: <input type="text" name="sucursal_origen"></p>
-    <p>Sucursal Destino ID: <input type="text" name="sucursal_destino"></p>
-    <p>Cantidad: <input type="number" name="cantidad"></p>
-    <button type="submit">Realizar transferencia</button>
-</form>
+<h1 class="text-center mb-4">🔄 Transferencia de Productos entre Sucursales</h1>
 
-<h2>Transferencias recientes</h2>
-<ul>
-    {% for transferencia in transferencias %}
-    <li>Producto: {{ transferencia.producto }} | Origen: {{ transferencia.sucursal_origen }} | Destino: {{ transferencia.sucursal_destino }} | Cantidad: {{ transferencia.cantidad }}</li>
-    {% endfor %}
-</ul>
+<div class="container mb-5">
+
+    <!-- Formulario para transferir -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">📦 Nueva Transferencia</h5>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <!-- Producto -->
+                    <div class="col-md-4">
+                        <label class="form-label">Producto:</label>
+                        <select name="producto_id" class="form-select" required>
+                            <option value="" disabled selected>Selecciona un producto</option>
+                            {% for producto in productos %}
+                                <option value="{{ producto.id }}">{{ producto.id }} - {{ producto.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Sucursal Origen -->
+                    <div class="col-md-4">
+                        <label class="form-label">Sucursal Origen:</label>
+                        <select name="sucursal_origen" class="form-select" required>
+                            <option value="" disabled selected>Selecciona sucursal de origen</option>
+                            {% for sucursal in sucursales %}
+                                <option value="{{ sucursal.id }}">{{ sucursal.id }} - {{ sucursal.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Sucursal Destino -->
+                    <div class="col-md-4">
+                        <label class="form-label">Sucursal Destino:</label>
+                        <select name="sucursal_destino" class="form-select" required>
+                            <option value="" disabled selected>Selecciona sucursal de destino</option>
+                            {% for sucursal in sucursales %}
+                                <option value="{{ sucursal.id }}">{{ sucursal.id }} - {{ sucursal.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Cantidad -->
+                    <div class="col-md-4 mt-3">
+                        <label class="form-label">Cantidad a transferir:</label>
+                        <input type="number" name="cantidad" class="form-control" placeholder="Ej: 10" min="1" required>
+                    </div>
+                </div>
+
+                <!-- Botón -->
+                <div class="mt-4 text-center">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">Realizar Transferencia 🚚</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de transferencias -->
+    <h5 class="mb-3">📋 Historial de Transferencias</h5>
+
+    {% if transferencias %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover shadow-sm">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>ID</th>
+                        <th>Producto ID</th>
+                        <th>Sucursal Origen ID</th>
+                        <th>Sucursal Destino ID</th>
+                        <th>Cantidad</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transferencia in transferencias %}
+                    <tr class="text-center">
+                        <td>{{ transferencia.id }}</td>
+                        <td>{{ transferencia.producto }}</td>
+                        <td>{{ transferencia.sucursal_origen }}</td>
+                        <td>{{ transferencia.sucursal_destino }}</td>
+                        <td>{{ transferencia.cantidad }}</td>
+                        <td>{{ transferencia.fecha }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">No hay transferencias registradas.</p>
+    {% endif %}
+
+</div>
+
 {% endblock %}

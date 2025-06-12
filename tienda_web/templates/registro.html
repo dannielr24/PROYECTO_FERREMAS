@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="text-center">Registro de Cliente</h2>
+<form method="post" class="w-50 mx-auto mt-4">
+    {% csrf_token %}
+    <input type="text" name="username" placeholder="Usuario" class="form-control mb-2">
+    <input type="email" name="email" placeholder="Email" class="form-control mb-2">
+    <input type="password" name="password" placeholder="Contraseña" class="form-control mb-2">
+    <button type="submit" class="btn btn-success w-100">Registrarse</button>
+</form>
+{% for message in messages %}
+<p class="text-danger text-center">{{ message }}</p>
+{% endfor %}
+{% endblock %}

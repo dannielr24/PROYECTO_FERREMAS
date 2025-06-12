@@ -13,5 +13,9 @@ urlpatterns = [
     path('transferencias/', views.transferencias, name='transferencias'),
     path('admin-page/', views.admin_page, name='admin_page'),
     path("limpiar-carrito/", views.limpiar_carrito, name="limpiar_carrito"),
+    path('sucursal/<int:sucursal_id>/productos/', views.productos_sucursal, name='productos_sucursal'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('registro/', views.registro, name='registro'),
 ]
 
