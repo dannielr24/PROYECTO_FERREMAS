@@ -1,12 +1,19 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Pago cancelado</title>
-</head>
-<body>
-    <h1>❌ El pago ha sido cancelado.</h1>
-    <p>No se ha realizado ningún cargo. Puedes volver a intentar la compra.</p>
-    <a href="/">Volver al inicio</a>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container text-center mt-5">
+    <div class="card shadow p-4">
+        <div class="card-body">
+            <h1 class="text-danger display-4 mb-4">❌ Pago Cancelado</h1>
+            <p class="lead mb-4">Tu pago ha sido cancelado. Puedes volver a intentarlo o seguir explorando nuestros productos.</p>
+
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/" class="btn btn-primary btn-lg">🏠 Volver al inicio</a>
+                <a href="{% url 'checkout' %}" class="btn btn-warning btn-lg">💳 Volver al Checkout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
