@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container text-center mt-5">
+    <div class="card shadow p-4">
+        <div class="card-body">
+            <h1 class="text-success display-4 mb-4">✅ ¡Pago Exitoso!</h1>
+            <p class="lead mb-4">Gracias por tu compra en Ferremas. Hemos recibido tu pago correctamente y pronto procesaremos tu pedido.</p>
+
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/" class="btn btn-primary btn-lg">🏠 Volver al inicio</a>
+                <a href="{% url 'catalogo' %}" class="btn btn-success btn-lg">🛍️ Seguir comprando</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
