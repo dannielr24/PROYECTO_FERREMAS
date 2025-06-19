@@ -3,6 +3,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
+from .models import Boleta, DetalleBoleta
 import requests
 
 # URL base de tus APIs
@@ -251,4 +252,35 @@ def eliminar_producto(request, producto_id):
 
     request.session["carrito"] = carrito
     return redirect("carrito")
+
+def generar_boleta(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    carrito = request.session.get("carrito", {})
+    if not carrito:
+        messages.error(request, "Tu carrito está vacío.")
+        return redirect("carrito")
+
+    total = sum(float(item["precio"]) * item["cantidad"] for item in carrito.values())
+    boleta = Boleta.objects.create(usuario=request.user, total=total)
+
+    for producto_id, item in carrito.items():
+        DetalleBoleta.objects.create(
+            boleta=boleta,
+            producto_id=int(producto_id),
+            cantidad=item["cantidad"],
+            precio_unitario=item["precio"]
+        )
+
+    request.session["carrito"] = {}
+    return render(request, "boleta_generada.html", {"boleta": boleta})
+
+
+def historial_compras(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    boletas = Boleta.objects.filter(usuario=request.user).order_by('-fecha')
+    return render(request, "historial_compras.html", {"boletas": boletas})
 
