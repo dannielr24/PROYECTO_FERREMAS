@@ -44,31 +44,39 @@ def descontar_stock(request):
     print("🔥 MÉTODO:", request.method)
     print("🔥 HEADERS:", request.headers)
     print("🔥 BODY CRUDO:", request.body)
+    print("🔥 DATA:", request.data)
 
+    producto_id = request.data.get("producto_id")
+    cantidad = request.data.get("cantidad")
+
+    print("🧪 producto_id:", producto_id, "cantidad:", cantidad)
+
+    # Validación de producto_id
+    if not producto_id:
+        return Response({"error": "ID de producto es requerido"}, status=400)
+
+    # Validación y conversión de cantidad
     try:
-        data = request.data
-        print("🔥 DATA:", data)
+        cantidad = int(cantidad)
+    except (ValueError, TypeError):
+        return Response({"error": "Error al procesar datos"}, status=400)
 
-        producto_id = int(data.get("producto_id"))
-        cantidad = int(data.get("cantidad"))
-        print(f"🧪 producto_id: {producto_id} cantidad: {cantidad}")
-    except Exception as e:
-        return Response({"error": f"Error al procesar datos: {str(e)}"}, status=400)
+    if cantidad == 0:
+        return Response({"error": "Cantidad debe ser mayor que cero"}, status=400)
+
+    if cantidad < 0:
+        return Response({"error": "Cantidad no puede ser negativa"}, status=400)
 
     try:
         producto = Producto.objects.get(pk=producto_id)
     except Producto.DoesNotExist:
-        return Response({"error": "Producto no encontrado."}, status=404)
+        return Response({"error": "Producto no encontrado"}, status=404)
 
     if producto.stock_disponible < cantidad:
-        return Response({"error": "Stock insuficiente."}, status=400)
+        return Response({"error": "Stock insuficiente"}, status=400)
 
+    # Descontar stock
     producto.stock_disponible -= cantidad
     producto.save()
 
-    return Response({
-        "message": "Stock actualizado correctamente.",
-        "producto_id": producto.id,
-        "nuevo_stock": producto.stock_disponible
-    }, status=200)
-
+    return Response({"mensaje": "Stock descontado correctamente", "nuevo_stock": producto.stock_disponible}, status=200)
