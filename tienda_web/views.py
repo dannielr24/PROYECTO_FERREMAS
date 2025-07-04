@@ -262,20 +262,28 @@ def generar_boleta(request):
         messages.error(request, "Tu carrito está vacío.")
         return redirect("carrito")
 
+    # Calcular el total de la compra
     total = sum(float(item["precio"]) * item["cantidad"] for item in carrito.values())
-    boleta = Boleta.objects.create(usuario=request.user, total=total)
 
+    # Crear la boleta
+    boleta = Boleta.objects.create(usuario=request.user, total=total)
+    print("Boleta creada:", boleta)  # Verificar que la boleta se crea correctamente
+
+    # Crear los detalles de la boleta
     for producto_id, item in carrito.items():
-        DetalleBoleta.objects.create(
+        detalle = DetalleBoleta.objects.create(
             boleta=boleta,
             producto_id=int(producto_id),
             cantidad=item["cantidad"],
             precio_unitario=item["precio"]
         )
+        print("Detalle creado:", detalle)  # Verificar que los detalles se crean correctamente
 
+    # Vaciar el carrito después de la compra
     request.session["carrito"] = {}
-    return render(request, "boleta_generada.html", {"boleta": boleta})
 
+    # Pasar la boleta generada a la plantilla
+    return render(request, "boleta_generada.html", {"boleta": boleta})
 
 def historial_compras(request):
     if not request.user.is_authenticated:

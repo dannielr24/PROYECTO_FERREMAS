@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Boleta Generada</title>
     <style>
+        /* Estilos de la boleta */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f9f9f9;
@@ -62,6 +63,16 @@
         .buttons a:hover {
             background-color: #2980b9;
         }
+        .producto-imagen {
+            max-width: 50px;
+            max-height: 50px;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+        .producto-info {
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -76,7 +87,14 @@
     <ul>
         {% for detalle in boleta.detalles.all %}
             <li>
-                <span>{{ detalle.cantidad }}x {{ detalle.producto.nombre }}</span>
+                <div class="producto-info">
+                    {% if detalle.producto.imagen %}
+                        <img src="{{ detalle.producto.imagen.url }}" alt="{{ detalle.producto.nombre }}" class="producto-imagen">
+                    {% else %}
+                        <img src="https://via.placeholder.com/50" alt="Sin imagen" class="producto-imagen">
+                    {% endif %}
+                    <span>{{ detalle.cantidad }}x {{ detalle.producto.nombre }}</span>
+                </div>
                 <span>${{ detalle.precio_unitario }}</span>
             </li>
         {% endfor %}

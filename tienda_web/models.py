@@ -11,9 +11,9 @@ class Boleta(models.Model):
 
 class DetalleBoleta(models.Model):
     boleta = models.ForeignKey(Boleta, related_name='detalles', on_delete=models.CASCADE)
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)  # Asegúrate de tener un modelo Producto correcto
     cantidad = models.PositiveIntegerField()
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.cantidad}x {self.producto.nombre} en Boleta #{self.boleta.id}"
+        return f"{self.cantidad}x {self.producto.nombre} a ${self.precio_unitario} c/u - Boleta #{self.boleta.id}"
