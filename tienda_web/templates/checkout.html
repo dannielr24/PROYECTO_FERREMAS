@@ -58,8 +58,9 @@
                         <button type="submit" class="btn btn-success btn-lg w-100 mb-2">Pagar con PayPal</button>
                     </form>
 
-                    <!-- ✅ Botón para generar boleta directamente -->
-                    <form method="get" action="{% url 'generar_boleta' %}">
+                    <!-- ✅ Botón actualizado para usar pago_confirmado -->
+                    <form method="post" action="{% url 'pago_confirmado' %}">
+                        {% csrf_token %}
                         <button type="submit" class="btn btn-warning w-100">Generar Boleta sin pagar</button>
                     </form>
                 </div>

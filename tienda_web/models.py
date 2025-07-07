@@ -11,9 +11,15 @@ class Boleta(models.Model):
 
 class DetalleBoleta(models.Model):
     boleta = models.ForeignKey(Boleta, related_name='detalles', on_delete=models.CASCADE)
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)  # Asegúrate de tener un modelo Producto correcto
-    cantidad = models.PositiveIntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    producto_id = models.IntegerField(default=0)  # Valor por defecto temporal
+    nombre_producto = models.CharField(max_length=255, default="Producto desconocido")
+    cantidad = models.PositiveIntegerField(default=1)
+    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    imagen_url = models.URLField(blank=True, default="")
+    
+    @property
+    def subtotal(self):
+        return self.cantidad * self.precio_unitario
 
     def __str__(self):
-        return f"{self.cantidad}x {self.producto.nombre} a ${self.precio_unitario} c/u - Boleta #{self.boleta.id}"
+        return f"{self.cantidad}x {self.nombre_producto}"

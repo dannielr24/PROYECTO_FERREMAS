@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -12,6 +12,7 @@ API_SUCURSALES_URL = 'http://localhost:8000/api/sucursal/sucursales/'
 API_TRANSFERENCIAS_URL = 'http://localhost:8000/api/sucursal/transferencias/'
 API_PEDIDOS_URL = 'http://localhost:8000/api/pedidos/'
 
+# VISTAS PRINCIPALES
 def catalogo(request):
     response = requests.get(API_PRODUCTOS_URL)
     productos = response.json() if response.status_code == 200 else []
@@ -43,7 +44,6 @@ def carrito(request):
     carrito = request.session.get("carrito", {})
     total = 0
 
-    # Generamos lista de items con subtotal incluido
     for item in carrito.values():
         item['subtotal'] = item['precio'] * item['cantidad']
         total += item['subtotal']
@@ -51,18 +51,27 @@ def carrito(request):
     return render(request, 'carrito.html', {"carrito": carrito, "total": total})
 
 def checkout(request):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
     carrito = request.session.get("carrito", {})
+    if not carrito:
+        return redirect("catalogo")
+
     total_clp = sum(float(item["precio"]) * item["cantidad"] for item in carrito.values())
 
-    # Obtener API mindicador
-    indicadores = requests.get("https://mindicador.cl/api").json()
+    try:
+        indicadores = requests.get("https://mindicador.cl/api").json()
+        dolar_value = indicadores["dolar"]["valor"]
+        euro_value = indicadores["euro"]["valor"]
+        uf_value = indicadores["uf"]["valor"]
+        utm_value = indicadores["utm"]["valor"]
+    except:
+        dolar_value = 900
+        euro_value = 1000
+        uf_value = 30000
+        utm_value = 50000
 
-    dolar_value = indicadores["dolar"]["valor"]
-    euro_value = indicadores["euro"]["valor"]
-    uf_value = indicadores["uf"]["valor"]
-    utm_value = indicadores["utm"]["valor"]
-
-    # Convertir total
     total_usd = round(total_clp / dolar_value, 2)
     total_eur = round(total_clp / euro_value, 2)
     total_uf = round(total_clp / uf_value, 2)
@@ -82,11 +91,75 @@ def checkout(request):
     })
 
 def pago_confirmado(request):
-    # request.session["carrito"] = {}
-    return render(request, 'pago_confirmado.html')
+    if not request.user.is_authenticated:
+        messages.error(request, "Debes iniciar sesión para completar la compra")
+        return redirect('login')
+    
+    carrito = request.session.get('carrito', {})
+    if not carrito:
+        messages.error(request, "Tu carrito está vacío")
+        return redirect('catalogo')
+    
+    try:
+        # Crear la boleta
+        total = sum(float(item["precio"]) * item["cantidad"] for item in carrito.values())
+        boleta = Boleta.objects.create(usuario=request.user, total=total)
+        
+        # Crear los detalles
+        for producto_id, item in carrito.items():
+            response = requests.get(f"{API_PRODUCTOS_URL}{producto_id}/")
+            if response.status_code == 200:
+                producto = response.json()
+                DetalleBoleta.objects.create(
+                    boleta=boleta,
+                    producto_id=producto_id,
+                    nombre_producto=producto['nombre'],
+                    cantidad=item['cantidad'],
+                    precio_unitario=item['precio'],
+                    imagen_url=producto.get('imagen', '')
+                )
+        
+        # Limpiar carrito
+        request.session['carrito'] = {}
+        
+        # Mostrar la boleta directamente en lugar de redirigir
+        detalles = boleta.detalles.all()
+        return render(request, 'boleta_generada.html', {
+            'boleta': boleta,
+            'detalles': detalles
+        })
+        
+    except Exception as e:
+        print(f"Error al generar boleta: {str(e)}")
+        messages.error(request, "Error al procesar tu compra")
+        return redirect('checkout')
 
-# NUEVAS VIEWS
+def ver_boleta(request, boleta_id):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    try:
+        boleta = Boleta.objects.get(id=boleta_id, usuario=request.user)
+        detalles = boleta.detalles.all()  # Usamos la relación inversa
+        
+        # Debug: Verificar datos
+        print(f"Boleta ID: {boleta.id}")
+        print(f"Total: {boleta.total}")
+        print(f"Número de detalles: {detalles.count()}")
+        
+        return render(request, 'boleta_generada.html', {
+            'boleta': boleta,
+            'detalles': detalles
+        })
+    except Boleta.DoesNotExist:
+        messages.error(request, "La boleta no existe")
+        return redirect('historial_compras')
 
+def generar_boleta(request):
+    """Función de compatibilidad que redirige al nuevo flujo"""
+    return pago_confirmado(request)
+
+# VISTAS DE SUCURSALES Y TRANSFERENCIAS
 def sucursales(request):
     response = requests.get(API_SUCURSALES_URL)
     sucursales = response.json() if response.status_code == 200 else []
@@ -96,11 +169,9 @@ def transferencias(request):
     response = requests.get(API_TRANSFERENCIAS_URL)
     transferencias = response.json() if response.status_code == 200 else []
 
-    # Obtener productos
     productos_response = requests.get(API_PRODUCTOS_URL)
     productos = productos_response.json() if productos_response.status_code == 200 else []
 
-    # Obtener sucursales
     sucursales_response = requests.get(API_SUCURSALES_URL)
     sucursales = sucursales_response.json() if sucursales_response.status_code == 200 else []
 
@@ -125,49 +196,7 @@ def transferencias(request):
 def admin_page(request):
     return render(request, 'admin_page.html')
 
-def limpiar_carrito(request):
-    request.session["carrito"] = {}
-    return redirect("carrito")
-
-def productos_sucursal(request, sucursal_id):
-    # Obtener info de la sucursal
-    sucursal_response = requests.get(f"{API_SUCURSALES_URL}{sucursal_id}/")
-    if sucursal_response.status_code != 200:
-        return redirect("sucursales")
-
-    sucursal = sucursal_response.json()
-
-    # Obtener inventario de sucursal
-    inventario_response = requests.get("http://localhost:8000/api/sucursal/inventario-sucursal/")
-    inventario = inventario_response.json() if inventario_response.status_code == 200 else []
-
-    # Filtrar inventario para esta sucursal (más simple en tu caso)
-    inventario_filtrado = [item for item in inventario if item["sucursal"] == sucursal_id]
-
-    # Obtener productos
-    productos_response = requests.get(API_PRODUCTOS_URL)
-    productos = productos_response.json() if productos_response.status_code == 200 else []
-
-    # Construir lista de productos con stock en esta sucursal
-    productos_en_sucursal = []
-    for item in inventario_filtrado:
-        # Aquí item["producto"] es un int (perfecto)
-        producto = next((p for p in productos if p["id"] == item["producto"]), None)
-        if producto:
-            productos_en_sucursal.append({
-                "nombre": producto["nombre"],
-                "descripcion": producto["descripcion"],
-                "precio": producto["precio"],
-                "imagen": producto.get("imagen", ""),
-                "stock": item["stock"]
-            })
-
-    return render(request, "productos_sucursal.html", {
-        "sucursal": sucursal,
-        "productos": productos_en_sucursal
-    })
-    
-    # LOGIN para clientes
+# VISTAS DE AUTENTICACIÓN
 def login_view(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -180,12 +209,10 @@ def login_view(request):
             messages.error(request, "Usuario o contraseña incorrectos.")
     return render(request, "login.html")
 
-# LOGOUT
 def logout_view(request):
     logout(request)
     return redirect("catalogo")
 
-# REGISTRO para clientes
 def registro(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -200,25 +227,11 @@ def registro(request):
             return redirect("login")
     return render(request, "registro.html")
 
-def get_dolar_value():
-    try:
-        response = requests.get("https://mindicador.cl/api/dolar")
-        response.raise_for_status()  # Lanza excepción si la respuesta no es 200 OK
-        data = response.json()
-        dolar_value = data["serie"][0]["valor"]  # El valor más reciente
-        return dolar_value
-    except Exception as e:
-        print("Error obteniendo el valor del dólar:", e)
-        return 900  # Valor de respaldo por si la API falla
-    
-def get_euro_value():
-    try:
-        response = requests.get("https://mindicador.cl/api/euro")
-        data = response.json()
-        return data["serie"][0]["valor"]
-    except Exception:
-        return 1100  # Valor por defecto si falla
-    
+# VISTAS DE GESTIÓN DE CARRITO
+def limpiar_carrito(request):
+    request.session["carrito"] = {}
+    return redirect("carrito")
+
 def aumentar_cantidad(request, producto_id):
     carrito = request.session.get("carrito", {})
     producto_id_str = str(producto_id)
@@ -237,7 +250,6 @@ def disminuir_cantidad(request, producto_id):
         if carrito[producto_id_str]["cantidad"] > 1:
             carrito[producto_id_str]["cantidad"] -= 1
         else:
-            # Si cantidad es 1 y se disminuye → eliminar producto
             del carrito[producto_id_str]
 
     request.session["carrito"] = carrito
@@ -253,42 +265,43 @@ def eliminar_producto(request, producto_id):
     request.session["carrito"] = carrito
     return redirect("carrito")
 
-def generar_boleta(request):
-    if not request.user.is_authenticated:
-        return redirect("login")
+# VISTAS DE PRODUCTOS POR SUCURSAL
+def productos_sucursal(request, sucursal_id):
+    sucursal_response = requests.get(f"{API_SUCURSALES_URL}{sucursal_id}/")
+    if sucursal_response.status_code != 200:
+        return redirect("sucursales")
 
-    carrito = request.session.get("carrito", {})
-    if not carrito:
-        messages.error(request, "Tu carrito está vacío.")
-        return redirect("carrito")
+    sucursal = sucursal_response.json()
 
-    # Calcular el total de la compra
-    total = sum(float(item["precio"]) * item["cantidad"] for item in carrito.values())
+    inventario_response = requests.get("http://localhost:8000/api/sucursal/inventario-sucursal/")
+    inventario = inventario_response.json() if inventario_response.status_code == 200 else []
 
-    # Crear la boleta
-    boleta = Boleta.objects.create(usuario=request.user, total=total)
-    print("Boleta creada:", boleta)  # Verificar que la boleta se crea correctamente
+    inventario_filtrado = [item for item in inventario if item["sucursal"] == sucursal_id]
 
-    # Crear los detalles de la boleta
-    for producto_id, item in carrito.items():
-        detalle = DetalleBoleta.objects.create(
-            boleta=boleta,
-            producto_id=int(producto_id),
-            cantidad=item["cantidad"],
-            precio_unitario=item["precio"]
-        )
-        print("Detalle creado:", detalle)  # Verificar que los detalles se crean correctamente
+    productos_response = requests.get(API_PRODUCTOS_URL)
+    productos = productos_response.json() if productos_response.status_code == 200 else []
 
-    # Vaciar el carrito después de la compra
-    request.session["carrito"] = {}
+    productos_en_sucursal = []
+    for item in inventario_filtrado:
+        producto = next((p for p in productos if p["id"] == item["producto"]), None)
+        if producto:
+            productos_en_sucursal.append({
+                "nombre": producto["nombre"],
+                "descripcion": producto["descripcion"],
+                "precio": producto["precio"],
+                "imagen": producto.get("imagen", ""),
+                "stock": item["stock"]
+            })
 
-    # Pasar la boleta generada a la plantilla
-    return render(request, "boleta_generada.html", {"boleta": boleta})
+    return render(request, "productos_sucursal.html", {
+        "sucursal": sucursal,
+        "productos": productos_en_sucursal
+    })
 
+# VISTA DE HISTORIAL
 def historial_compras(request):
     if not request.user.is_authenticated:
         return redirect("login")
 
     boletas = Boleta.objects.filter(usuario=request.user).order_by('-fecha')
     return render(request, "historial_compras.html", {"boletas": boletas})
-
